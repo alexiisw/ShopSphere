@@ -18,19 +18,21 @@ public class Cart {
         }
             items.add(new CartItem(product)); // adds item to cart
     }
-    public void removeProduct(String name) { // // void because it doesn't return anything just changes data (removing something)
-        for (CartItem item : items){
+    public boolean removeProduct(String name) { // // void because it doesn't return anything just changes data (removing something)
+        for (int i = 0; i< items.size(); i++){ // Creates a variable named i and starts it at 0; if 'i' is smaller than the size of the list; add 1 after each pass through the loop
+            CartItem item = items.get(i);
 
             if (item.getProduct().getName().equalsIgnoreCase(name)) { // compares the name of the product being removed to the name on the products already in the cart
                 if (item.getQuantity() > 1) { // checks the qty and checks if there is more than one of that particular product
                     item.decreaseQuantity(); // match found ; decreases the qty by 1
 
                 } else {
-                    items.remove(item); // will just remove item if the qty is at 1
+                    items.remove(i); // will just remove item if the qty is at 1
                 }
-                return;
+                return true; // product found and removed
             }
         }
+        return false; // product not found
     }
     public ArrayList<CartItem> getItems() { // returns all cartItems when displaying cart
             return items;
@@ -45,5 +47,8 @@ public class Cart {
     }
     public boolean isEmpty() { // checks if the cart is empty; returns true if cart is empty / returns false if cart contains items
         return items.isEmpty();
+    }
+    public void clearCart() {
+        items.clear();
     }
 }

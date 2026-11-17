@@ -2,9 +2,6 @@ package OnlineStore;
 
 import java.util.ArrayList;
 import java.util.Scanner;
-
-import static OnlineStore.Search.*;
-
 public class Menu {
     public static void homeMenu(ArrayList<Products> inventory) {// uses the inventory it receives
         Cart customerCart = new Cart();
@@ -41,7 +38,6 @@ public class Menu {
             }
         }
     }
-    //ArrayList<String> displayedProducts = new ArrayList<>();
     public static void displayMenu(ArrayList<Products> inventory,Cart customerCart, Scanner read) {
 
         displayProducts(inventory);
@@ -55,14 +51,18 @@ public class Menu {
                 searchByName(inventory, customerCart, read);
                 break;
             case 2:
-                searchByDepartment(inventory, customerCart, read);
+                searchByPrice(inventory, customerCart, read);
                 break;
             case 3:
-                searchByPrice(inventory, customerCart, read);
+                searchByDepartment(inventory, customerCart, read);
                 break;
         }
     }
     public static void cartMenu (Cart customerCart, Scanner read) {
+        if (customerCart.isEmpty()) {
+            System.out.println("CART IS EMPTY.");
+            return;
+        }
         displayCart(customerCart);
 
         System.out.print("""
@@ -76,12 +76,13 @@ public class Menu {
 
         switch (selection) {
             case 1:
-                checkout(customerCart);
+                checkout(customerCart, read);
                 break;
             case 2:
                 removeProduct(customerCart, read);
                 break;
-
+            case 3:
+                return;
         }
     }
     public static void searchByName(ArrayList<Products> inventory, Cart customerCart, Scanner read){
@@ -90,16 +91,17 @@ public class Menu {
 
         ArrayList<Products> matchingName = Search.searchByProductName(inventory, nameSearch);
 
-        displaySearchResults(matchingName, inventory, customerCart, read);
+        displaySearchResults(matchingName, customerCart, read);
     }
     public static void searchByPrice(ArrayList<Products> inventory, Cart customerCart, Scanner read){
+
         System.out.println("Please enter the product's price: ");
-        String priceSearch = read.nextLine();
-        double productPrice = Double.parseDouble(priceSearch);
+        double priceSearch = read.nextDouble();
+        read.nextLine(); // east leftover line
 
-        ArrayList<Products> matchingPrice = Search.searchByProductPrice(inventory, productPrice);
+        ArrayList<Products> matchingPrice = Search.searchByProductPrice(inventory, priceSearch);
 
-        displaySearchResults(matchingPrice, inventory, customerCart, read);
+        displaySearchResults(matchingPrice, customerCart, read);
     }
     public static void searchByDepartment(ArrayList<Products> inventory, Cart customerCart, Scanner read){
         System.out.println("Please enter the store department you wish to explore: ");
@@ -107,23 +109,19 @@ public class Menu {
 
         ArrayList<Products> matchingDepartment = Search.searchByProductDepartment(inventory, departmentSearch);
 
-        displaySearchResults(matchingDepartment, inventory, customerCart, read);
+        displaySearchResults(matchingDepartment, customerCart, read);
     }
-    public static void displaySearchResults(ArrayList<Products> inventory, ArrayList<Products> results, Cart customerCart, Scanner read){
-        System.out.println("Please enter the product name you are looking for: ");
-        String nameSearch = read.nextLine();
-
-        ArrayList<Products> matchingName = Search.searchByProductName(inventory, nameSearch);
+    public static void displaySearchResults(ArrayList<Products> results, Cart customerCart, Scanner read){
 
         if (results.isEmpty()) {
-            System.out.print("Item not found!");
+            System.out.println("Item not found!");
             return;
         }
-
+        System.out.print("Search Results:\n");
         for (Products product : results) {
             product.displayInfo();
         }
-        addToCart(inventory, customerCart, read);
+        addToCart(results, customerCart, read);
     }
     public static void displayProducts(ArrayList<Products> inventory){
         for (Products product :inventory){
@@ -131,16 +129,12 @@ public class Menu {
         }
     }
     public static void displayCart(Cart customerCart){
-        if (customerCart.isEmpty()){
-            System.out.println("CART IS EMPTY.");
-            return;
-        }
         for (CartItem item : customerCart.getItems()) {
             System.out.printf("%s - QTY: %d%n", item.getProduct().getName(), item.getQuantity()); // will only display name of product instead of all product info && its qty in the cart
         }
         System.out.printf("Total: $%.2f%n", customerCart.getTotal());
     }
-    public static void addToCart(ArrayList<Products> inventory, Cart customerCart, Scanner read){
+    public static void addToCart(ArrayList<Products> products, Cart customerCart, Scanner read){
         System.out.println("Would you like to an add item to your cart? Yes or No");
         String addToCart = read.nextLine();
 
@@ -150,24 +144,48 @@ public class Menu {
         System.out.println("Please enter the product name you would like to add to your cart: ");
         String nameSearch = read.nextLine();
 
-        ArrayList<Products> foundProduct = Search.searchByProductName(inventory, nameSearch);
+        ArrayList<Products> foundProduct = Search.searchByProductName(products, nameSearch);
 
         if (!foundProduct.isEmpty()) { // as long a result comes back
             customerCart.addProduct(foundProduct.get(0));
 
             System.out.print("Item has been added to cart.\n");
+        }else{
+            System.out.println("Product not found");
         }
     }
-    public static void removeProduct(Cart customerCart, Scanner read){
+    public static void removeProduct(Cart customerCart, Scanner read) {
         System.out.print("Enter the product name below. \n");
 
         String removeProduct = read.nextLine();
-        customerCart.removeProduct(removeProduct);
+        boolean removed = customerCart.removeProduct(removeProduct);
 
-        System.out.println("Item has been removed");
+        if(removed){
+            System.out.println("Item has been removed");
+        }else{
+            System.out.println("Product not found");
+        }
     }
-    public static void checkout(Cart customerCart){
-        System.out.printf("Total: $%.2f%n", customerCart.getTotal());
+    public static void checkout(Cart customerCart, Scanner read){
+        if (customerCart.isEmpty()) { // ensure there's something in the cart
+            System.out.println("Your cart is empty.");
+            return;
+        }
+        double total = customerCart.getTotal();
+        System.out.printf("Total Due: $%.2f%n", total);
+
+        System.out.print("Please enter the amount paid: $");
+        double amountPaid = read.nextDouble();
+        read.nextLine(); // eats leftover line
+
+        if(amountPaid >= total){
+            double change = amountPaid - total;
+
+            Receipt.generateReceipt(customerCart,amountPaid,change);
+            customerCart.clearCart(); //clears cart after purchase is complete
+        }else{
+            System.out.println("Insufficient funds.");
+        }
         System.out.println("Thank you for shopping. See you soon!");
 
     }

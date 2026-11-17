@@ -1,10 +1,10 @@
 package OnlineStore;
 
 public class Products { // stores the properties defined by csv file
-    private String sku;
-    private String name;
-    private double price;
-    private String department ;
+    private final String sku;
+    private final String name;
+    private final double price;
+    private final String department ;
 
     // Constructor - stores values
     public Products (String sku,

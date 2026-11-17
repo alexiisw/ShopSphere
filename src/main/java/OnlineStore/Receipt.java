@@ -50,8 +50,9 @@ public class Receipt {
     public static void storeReceipt(String receiptText){ //Receives the completed receipt and saves it
 
         File folder = new File("Receipts"); // represents the folder name Receipts but doesn't create it just yet
-        if (!folder.exists()) { // checks if file doesn't(!) exist
-            folder.mkdirs(); // creates folder if it doesn't exist
+        if (!folder.exists() && !folder.mkdirs()) { //checks if file doesn't(!) exist; creates the folder if it doesn't exist; checks whether the folder was successfully created
+            System.out.println("Could not create Receipts folder."); // displays error message if error creating folder
+            return;
         }
 
         LocalDateTime now = LocalDateTime.now(); // assigns the local date/time
@@ -59,6 +60,8 @@ public class Receipt {
 
         try(BufferedWriter writer = new BufferedWriter(new FileWriter("Receipts/" + now.format(formatter) + ".txt"))){ // creates the name of the file
             writer.write(receiptText); // Writes the receipt contents into the file
+            System.out.println("Receipt successfully saved to: " + writer); //
+
         }
         catch (IOException e){
             System.out.println("Error saving receipt:" + e.getMessage()); // displays the actual error

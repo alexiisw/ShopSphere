@@ -33,7 +33,7 @@ public class Search {
     }
 }
 
-//search one product
+                        //search one product
 //        public static Products searchByProductName(ArrayList<Products> inventory, String nameSearch) {
 //            for (Products products : inventory) { // runs through the inventory list
 //                if (products.getName().equalsIgnoreCase(nameSearch)) { // compares the input vs the product
